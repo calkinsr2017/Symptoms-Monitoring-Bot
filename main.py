@@ -15,10 +15,8 @@ import os
 import threading
 from dotenv import load_dotenv
 import datetime
+from firebase import Firebase
 load_dotenv()
-
-username = os.getenv('USERNAME')
-password = os.getenv('PASSWORD')
 
 #So here is the dealio. I did most of this code for my eppley bot where I had to bypass duo. I am trying to copy and paste as much as possible.
 
@@ -48,23 +46,21 @@ class Bot:
         self.password = password
 
     #This method will go through the process of going to the survey and filling it out
-    def main(self, link, passcode, logInNeeded = True):
-        #do stuff
+    def main(self, passcode, logInNeeded = True):
+        print("Starting the main survey process")
 
-        #Mike here are the questions I need answered in order to finish this method.
-
-        #1) How do you want this to run? Manually run this file once you wake up in the morning with everything downloaded on your computer?
-            #If you keep your desktop on overnight you can schedule a job to run this file
-            #I think I might be able to make an executable that you just double click and go brush your teeth. 
-            #I can put it on docker and put it in a google cloud instance for you ($7 bucks a month ish)
-            #Somehow get it on AWS, its free but I have never done it. 
-        #2) DUO codes need to be used in order to have it login, I can have those stored in a file and keep them local or 
-            #Put them in a firebase realtime database. I dont know how complicated you want this
-
-        #Let me know what your imagining when you want the survey to be done automatically. 
-
-    
-
+        self.driver.get("https://return.umd.edu/covid/survey/")
+        self.duoLogin(passcode)
+        
+        time.sleep(10)
+        self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/div")
+        
+        self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[3]/div/div/button").click()
+        
+        time.sleep(10)
+        self.driver.close()
+        
+        
         
     #This method is responsible for getting past duo. Now in order to not have to get a push notification to your phone
     #I am using the duocodes that can be generated. You can get 10 at a time. I used firebase to store the 10 codes and then
@@ -107,3 +103,37 @@ class Bot:
 
         self.driver.close()
         return passCodeList
+
+
+if __name__ == '__main__':
+
+    firebase = Firebase()
+    
+    listOfUsers = firebase.getListOfUsers()
+    #There is only one user (Mike) so it is just the first entry. If you scale this, you can iterate over the users
+    currUser = listOfUsers[0]
+    username, password, passcodes = firebase.getValues(currUser)
+
+    print(username, password, passcodes)
+
+    #Logic to get the latest code and see if you need to generate new passcodes
+    passcode = 0
+    needToGetnewPasscodes = False
+    for i in range(len(passcodes)):
+        if passcodes[i] != '0': 
+            passcode = passcodes[i]
+            passcodes[i] = '0'
+            if i == 9: needToGetnewPasscodes = True
+            break
+
+    if needToGetnewPasscodes:
+        print(username, ": Getting new passcodes")
+        bot = Bot(username, password)
+        passcodes = bot.getMorePasscodes(passcode)  #Selenium doing stuff
+        passcode = passcodes[0] #Get the newest code
+        passcodes[0] ='0'
+
+    firebase.setPasscodes(currUser, passcodes)
+
+    bot = Bot(username, password)
+    bot.main(passcode) #Selenium doing stuff

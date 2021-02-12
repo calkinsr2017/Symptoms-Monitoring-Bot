@@ -72,6 +72,13 @@ class Firebase:
         currUser.update({
             'passcodes' : passcodes
         })
+    
+    def getListOfUsers(self):
+        ref = db.reference('users')
+        users = []
+        for user in ref.get():
+            users.append(user)
+        return users
 
 if __name__ == '__main__':
 

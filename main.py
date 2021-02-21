@@ -56,14 +56,14 @@ class Bot:
         self.driver.get("https://return.umd.edu/covid/survey/")
         self.duoLogin(passcode)
         
-        time.sleep(1)
+        time.sleep(3)
         
         # Mike fix - have to use the input and check if it is already checked as that data can be cached
         self.checkbox = self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/input")
         if self.checkbox.is_selected() == False:
-            self.checkbox.click()
+            self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/div").click()
             
-        time.sleep(1)
+        time.sleep(3)
         self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[3]/div/div/button").click()
         
         time.sleep(10)

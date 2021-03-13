@@ -1,4 +1,5 @@
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
@@ -38,12 +39,15 @@ class Bot:
         })
 
         #Main selenium driver
-        self.driver = webdriver.Chrome(options=option)
+        # Mike addition to get the latest version of chrome driver for you even if you have different chrome version
+        # driver = webdriver.Chrome(ChromeDriverManager().install())
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=option)
         #wait is set to 60 seconds
         self.wait = WebDriverWait(self.driver, 60)
 
         self.username = username
         self.password = password
+        self.checkbox = None
 
     #This method will go through the process of going to the survey and filling it out
     def main(self, passcode, logInNeeded = True):
@@ -52,9 +56,14 @@ class Bot:
         self.driver.get("https://return.umd.edu/covid/survey/")
         self.duoLogin(passcode)
         
-        time.sleep(10)
-        self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/div")
+        time.sleep(3)
         
+        # Mike fix - have to use the input and check if it is already checked as that data can be cached
+        self.checkbox = self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/input")
+        if self.checkbox.is_selected() == False:
+            self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[4]/div/div[3]/div/div[1]/div/div").click()
+            
+        time.sleep(3)
         self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[3]/div/div/button").click()
         
         time.sleep(10)

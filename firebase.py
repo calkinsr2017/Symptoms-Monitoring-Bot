@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 import datetime
 load_dotenv()
 
-databaseUrl = os.getenv('DATABASEURL')
-
 #This file is to help create and manage the firebase database.
 #In a .env file have a variable named DATABASEURL set to the url given in the realtime database.
  
@@ -23,6 +21,16 @@ class Firebase:
         # 4) put in this directory and rename to firebase-sdk.json
         #It is in the gitignore because it is sensitive info
         self.cred = credentials.Certificate('firebase-sdk.json')
+        
+        # 5) simply have a txt file that will be read as your secret databaseURL
+        content = ""
+        script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
+        abs_file_path = os.path.join(script_dir, 'secreturl.txt')
+        with open(abs_file_path) as f:
+            content = f.read()
+            
+        f.close()
+        databaseUrl = content
         
         # Initialize the app with a service account, granting admin privileges
         firebase_admin.initialize_app(self.cred, {

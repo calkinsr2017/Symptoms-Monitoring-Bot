@@ -54,9 +54,10 @@ class Bot:
         print("Starting the main survey process")
 
         self.driver.get("https://return.umd.edu/covid/survey/")
+
         self.duoLogin(passcode)
         
-        time.sleep(3)
+        time.sleep(6)
         
         # Mike fix - have to use the input and check if it is already checked as that data can be cached
         self.checkbox = self.driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[2]/form/div/div[5]/div/div[3]/div/div[1]/div/input")
@@ -84,10 +85,15 @@ class Bot:
         password.send_keys(Keys.ENTER)
 
         self.driver.switch_to.frame(self.wait.until(EC.presence_of_element_located((By.ID, 'duo_iframe'))))
-        passCodeBtn = self.driver.find_element(By.XPATH, '/html/body/div/div/div[1]/div/form/div[1]/fieldset[1]/div[3]/button')
-        ActionChains(self.driver).click(passCodeBtn).perform()
-        time.sleep(1)
+        passCodeBtn = self.driver.find_element(By.XPATH, '/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[3]/button')
+
+        time.sleep(2) # wait for page to refresh to do any clicking and then get a new refrence to avoid 'stale element exception'
+
+        passCodeBtn1 = self.wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[3]/button')))
+        passCodeBtn1.click()
+
         passCodeInput = self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'passcode-input')))
+        #passCodeInput = self.driver.find_element(By.CLASS_NAME, 'passcode-input')
         passCodeInput.send_keys(passcode)
         passCodeInput.send_keys(Keys.ENTER)
 
@@ -129,11 +135,13 @@ if __name__ == '__main__':
     passcode = 0
     needToGetnewPasscodes = False
     for i in range(len(passcodes)):
-        if passcodes[i] != '0': 
+        if passcodes[i] != "0": 
             passcode = passcodes[i]
-            passcodes[i] = '0'
+            passcodes[i] = "0"
             if i == 9: needToGetnewPasscodes = True
             break
+        else:
+            print(passcodes[i], i)
 
     if needToGetnewPasscodes:
         print(username, ": Getting new passcodes")

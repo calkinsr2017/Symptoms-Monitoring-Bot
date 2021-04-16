@@ -25,9 +25,9 @@ Click "Environment variables" and under System variables make sure C:\Users\MPLE
 Within the cloned repository open command prompt
 
 Install the following modules with pip (part of python):
-run `pip install selenium` 
-run `pip install webdriver_manager` 
-run `pip install firebase_auth`
-run `pip install python-dotenv`
+- run `pip install selenium` 
+- run `pip install webdriver_manager` 
+- run `pip install firebase_auth`
+- run `pip install python-dotenv`
 
 Run main.bat
